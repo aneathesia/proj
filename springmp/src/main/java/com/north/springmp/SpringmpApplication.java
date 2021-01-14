@@ -8,7 +8,7 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
 @SpringBootApplication
 @EnableOpenApi
 @MapperScan("com.north.springmp.mapper")
-@MapperScan("com.north.springmp.northwind.mapper")  //scan all the mapper implement
+@MapperScan("com.north.springmp.northwinddb.mapper")  //scan all the mapper implement
 
 public class SpringmpApplication {
 

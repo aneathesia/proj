@@ -1,9 +1,6 @@
-package com.north.springmp.northwind.controller;
+package com.north.springmp.northwinddb.controller;
 
 
-import com.north.springmp.northwind.entity.Route;
-import com.north.springmp.northwind.mapper.RouteMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;

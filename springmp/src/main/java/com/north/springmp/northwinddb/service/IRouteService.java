@@ -1,6 +1,6 @@
-package com.north.springmp.northwind.service;
+package com.north.springmp.northwinddb.service;
 
-import com.north.springmp.northwind.entity.Route;
+import com.north.springmp.northwinddb.entity.Route;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

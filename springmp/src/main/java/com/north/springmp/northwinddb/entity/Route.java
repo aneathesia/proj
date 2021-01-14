@@ -1,4 +1,4 @@
-package com.north.springmp.northwind.entity;
+package com.north.springmp.northwinddb.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;

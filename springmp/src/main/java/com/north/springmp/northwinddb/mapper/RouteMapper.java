@@ -1,8 +1,7 @@
-package com.north.springmp.northwind.mapper;
+package com.north.springmp.northwinddb.mapper;
 
-import com.north.springmp.northwind.entity.Route;
+import com.north.springmp.northwinddb.entity.Route;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>

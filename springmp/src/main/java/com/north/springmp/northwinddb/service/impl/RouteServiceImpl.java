@@ -1,8 +1,8 @@
-package com.north.springmp.northwind.service.impl;
+package com.north.springmp.northwinddb.service.impl;
 
-import com.north.springmp.northwind.entity.Route;
-import com.north.springmp.northwind.mapper.RouteMapper;
-import com.north.springmp.northwind.service.IRouteService;
+import com.north.springmp.northwinddb.entity.Route;
+import com.north.springmp.northwinddb.mapper.RouteMapper;
+import com.north.springmp.northwinddb.service.IRouteService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 

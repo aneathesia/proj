@@ -1,6 +1,9 @@
 package com.north.springmp.Controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.north.springmp.entity.CONDUCTOR;
 import com.north.springmp.jna.Senctional;
+import com.north.springmp.jna.prkfile;
 import com.north.springmp.mapper.UserMapper;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
@@ -29,24 +32,7 @@ public class UserController {
         return sout;
     }
 
-    @RequestMapping("/test1")
-    @ResponseBody
-    public String test1(String name,String pwd){
-        String s1=name;
-        String s2=pwd;
-//
-//        User muser = new User();
-//         //primary key  usename   unique id generate
-//
-//        muser.setUsername(s1);
-//        muser.setPassword(s2);
 
-//        muser.setId(7);
-//        userMapper.insert(muser);
-        System.out.println(userMapper.selectById(5).username);
-
-        return  s1+s2;
-    }
 
 //    @GetMapping("/caculate")
 //    public int addres(){
@@ -65,12 +51,22 @@ public class UserController {
         Senctional.CLibrary.INSTANCE.GenrateCoord(resPath+"DEM.EGX",ptrRef);
 // extract the void* that was allocated in C
         final Pointer p = ptrRef.getValue();
-// extract the null-terminated string from the Pointer
+// extract the null-terminated string from the Pointers
         final String val = p.getString(0);
         return  val;
 
     }
 
-
-
+    @GetMapping("/prkfile")
+    public String prkfile(){
+        //@Autowired
+        final PointerByReference ptrRef = new PointerByReference();
+        prkfile.CPRKLibary.cprk.ReadPrk("D:\\Springproject\\springmp\\json.PRK",ptrRef);
+        // extract the void* that was allocated in C
+        final Pointer p = ptrRef.getValue();
+        // extract the null-terminated string from the Pointer
+        final String val = p.getString(0);
+        System.out.println(val);
+        return val;
+    }
 }
