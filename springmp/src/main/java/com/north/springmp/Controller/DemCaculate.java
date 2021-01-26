@@ -1,6 +1,7 @@
 package com.north.springmp.Controller;
 
 import com.north.springmp.jna.JNATest;
+import com.north.springmp.jna.ProjectDesign;
 import com.north.springmp.jna.Senctional;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
@@ -44,14 +45,17 @@ public class ImgLoader {
 
         final PointerByReference ptrRef = new PointerByReference();
 // call the C function
-        Senctional.CLibrary.INSTANCE.GenrateCoord(resPath+originalFilename,ptrRef);
+        ProjectDesign.PDLibary.pd.GenerateCoord(resPath+originalFilename,ptrRef);
 // extract the void* that was allocated in C
         final Pointer p = ptrRef.getValue();
 // extract the null-terminated string from the Pointer
         final String val = p.getString(0);
 
         return val;
+
     }
+
+    
 
 }
 
