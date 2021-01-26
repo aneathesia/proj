@@ -17,7 +17,7 @@
     export  default {
       created() {
         //alert(123);
-        axios.get('http://202.114.118.138:8181/prkfile').then(function (resp) {
+        axios.get('http://202.114.118.138:8181/pwffile').then(function (resp) {
               console.log(resp.data);
         })
         //
@@ -33,9 +33,10 @@
         console.log(file);
         const data = new FormData();
         data.append('file', file);
+        data.append('ProjectName',"Jan");
         //file upload
         //'http://202.114.118.138:8181/uploadimg'
-        axios.post('http://202.114.118.138:8181/uploadimg', data, {
+        axios.post('http://202.114.118.138:8181/EGXCaculate', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -45,6 +46,27 @@
           console.log(err);
         });
       }
+      },
+
+      methods:{
+        changeHandle() {
+          // const file = this.$refs.fileInt.files[0];
+          // console.log(file);
+          const data = new FormData();
+          // data.append('file', file);
+          data.append('ProjectName',"Jan");
+          //file upload
+          //'http://202.114.118.138:8181/uploadimg'
+          axios.post('http://202.114.118.138:8181/Project', data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }).then(res => {
+            console.log(res);
+          }).catch(err => {
+            console.log(err);
+          });
+        }
       }
 
     }
