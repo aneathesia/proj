@@ -2,6 +2,7 @@ package com.north.springmp.Controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.north.springmp.entity.CONDUCTOR;
+import com.north.springmp.jna.ProjectDesign;
 import com.north.springmp.jna.Senctional;
 import com.north.springmp.jna.prkfile;
 import com.north.springmp.mapper.UserMapper;
@@ -13,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 
-@Api(tags = "User manage")
+@Api(tags = "不可使用 test User manage ")
 @RestController
 @RequestMapping(value = "")
 public class UserController {
@@ -21,7 +22,7 @@ public class UserController {
     public  String begin(){
         return "Springboot";
     }
-    @Autowired
+    //@Autowired
     private UserMapper userMapper;
     @GetMapping("/User")
     @ApiOperation(value="UserInfo",notes="user id name password")
@@ -57,16 +58,5 @@ public class UserController {
 
     }
 
-    @GetMapping("/prkfile")
-    public String prkfile(){
-        //@Autowired
-        final PointerByReference ptrRef = new PointerByReference();
-        prkfile.CPRKLibary.cprk.ReadPrk("D:\\Springproject\\springmp\\json.PRK",ptrRef);
-        // extract the void* that was allocated in C
-        final Pointer p = ptrRef.getValue();
-        // extract the null-terminated string from the Pointer
-        final String val = p.getString(0);
-        System.out.println(val);
-        return val;
-    }
+
 }

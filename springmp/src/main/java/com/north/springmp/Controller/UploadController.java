@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Controller
 @ResponseBody
-@Api(value = "file upload")
+@Api(tags = "不可使用 file upload test")
 public class UploadController {
 //    @RequestMapping(value="/uploadPre",method = RequestMethod.GET)
 //    public String uploadPre(){

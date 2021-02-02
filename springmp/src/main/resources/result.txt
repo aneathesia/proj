@@ -1,2 +1,0 @@
-result write into file
-51.7858 1015.0000

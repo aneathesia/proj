@@ -4,6 +4,7 @@ package com.north.springmp.northwinddb.controller;
 import com.north.springmp.northwinddb.entity.Pole;
 import com.north.springmp.northwinddb.mapper.PoleMapper;
 import com.north.springmp.northwinddb.service.impl.PoleServiceImpl;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/northwinddb/pole")
+@Api(tags="不可使用 db test")
 public class PoleController {
     @Autowired
     PoleMapper poleMapper;

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -13,28 +14,30 @@ import java.util.Date;
 import java.util.UUID;
 
 @RestController
-@Api(value = "about file")
+@Api(tags = "不可使用")
 public class fileController {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("/yyyy/MM/dd");
-
     @RequestMapping(value = "/import",method = RequestMethod.POST)
-    //@RequestMapping(value = "/import",method = RequestMethod.GET)
-    public void importData(MultipartFile file, HttpServletRequest req) throws IOException{
-        String format = simpleDateFormat.format(new Date());
-        String realPath =req.getServletContext().getRealPath("/resources")+format;
-        System.out.println(realPath);
-        File folder =new File(realPath);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-        if (file != null) {
-            String oldName = file.getOriginalFilename();
-            String newName = UUID.randomUUID().toString()+oldName.substring(oldName.lastIndexOf("."));
-            file.transferTo(new File(folder,newName));
-            String url =req.getScheme()+"://"+req.getServerName()+":"+req.getServerPort()+"/upload"+format+newName;
-            System.out.println(url);
-        }
+    public void importfile(@RequestParam("file") MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws IllegalStateException, IOException {
+        //相对dir src/main/resource/static
 
-        //RespBean   Resp.ok
+        String app_path = System.getProperty("user.dir");//程序当前路径
+        String stat_path = app_path+"\\src\\main\\resources";
+        System.out.println(stat_path);
+        String ip = request.getRemoteAddr();
+        String ProjectName = request.getParameter("ProjectName");
+        String ProjPath = stat_path+"\\"+ip+"\\"+ProjectName;
+
+        //System.out.println(path);
+        String originalFilename = file.getOriginalFilename();
+        System.out.println(originalFilename);
+
+        String extendName = originalFilename.substring(originalFilename.lastIndexOf("."), originalFilename.length());
+        File dir = new File(ProjPath, originalFilename);
+
+        File filepath = new File(ProjPath);
+        if (!filepath.exists()) {
+            filepath.mkdirs();
+        }
+        file.transferTo(dir);
     }
 }
