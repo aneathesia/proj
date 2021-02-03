@@ -2,6 +2,7 @@ package com.north.springmp.Controller;
 
 import ch.qos.logback.core.util.FileUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.north.springmp.jna.ProjectDesign;
 import com.sun.jna.Pointer;
@@ -37,6 +38,8 @@ import java.util.List;
 @ResponseBody
 @Api(tags = "CreateProject、fileUpload")
 public class Project {
+
+
     @CrossOrigin
     @RequestMapping(value = "/fileUpload",method = RequestMethod.POST)
     public List<FileInfo> fileController(@RequestParam("file") MultipartFile file, HttpServletRequest request, HttpServletResponse response) throws IllegalStateException, IOException {
@@ -79,6 +82,95 @@ public class Project {
         }
         return filelist;
     }
+
+    @CrossOrigin
+    @RequestMapping(value = "/UploadfileToJson",method = RequestMethod.POST)
+    public JSONObject EGXFileToSection(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IllegalStateException, IOException {
+        String app_path = System.getProperty("user.dir");
+        String stat_path = app_path+"\\src\\main\\resources";
+        String ip = request.getRemoteAddr();
+        String ProjectName = request.getParameter("ProjectName");
+        System.out.println(ProjectName);
+
+//        System.out.println(ProjectName);
+//        ProjectName="Jan";
+//        System.out.println(ProjectName);
+
+        //文件名中取出 文件名 文件后缀
+        String filename = file.getOriginalFilename().substring(0,file.getOriginalFilename().lastIndexOf("."));
+        String filesuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1,file.getOriginalFilename().length());
+
+        System.out.println(filesuffix);
+        //创建文件夹 Proj
+        File filepath = new File(stat_path+"\\"+ip+"\\"+ProjectName,file.getOriginalFilename());
+        System.out.println(filepath.exists());
+        if (!filepath.exists()) {
+            filepath.mkdirs();
+            System.out.println(filepath.toString());
+        }
+        file.transferTo(filepath);
+//创建文件夹
+//        String ip = request.getRemoteAddr();
+//        String projname = file.getOriginalFilename().substring(0,originalFilename.lastIndexOf("."));
+//        System.out.println(projname);
+//        File testfilepath = new File(stat_path+"\\"+ip);
+//        System.out.println(testfilepath.exists());
+//        if (!testfilepath.exists()) {
+//            testfilepath.mkdirs();
+//            System.out.println(testfilepath.toString());
+//        }
+        System.out.println(stat_path + "\\" + ip + "\\" + ProjectName + "\\" + file.getOriginalFilename());
+        final PointerByReference ptrRef = new PointerByReference();
+// call the C function  according to filesuffix
+        switch (filesuffix){
+            case "PRK":
+                ProjectDesign.PDLibary.pd.PrkRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+file.getOriginalFilename(),ptrRef);
+                break;
+            case "PRJ":
+                ProjectDesign.PDLibary.pd.PrjRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+file.getOriginalFilename(),ptrRef);
+                break;
+            case "PWF":
+                ProjectDesign.PDLibary.pd.PwfRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+file.getOriginalFilename(),ptrRef);
+                break;
+            case "MAP":
+                ProjectDesign.PDLibary.pd.MapRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+file.getOriginalFilename(),ptrRef);
+                break;
+            case "LAO":
+                ProjectDesign.PDLibary.pd.LaoRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+file.getOriginalFilename(),ptrRef);
+                break;
+            default:
+                System.out.println("file miss match");
+        }
+
+// extract the void* that was allocated in C
+        final Pointer p = ptrRef.getValue();
+// extract the null-terminated string from the Pointer  p need not null
+        final String val = p.getString(0);
+        JSONObject jsonObject = JSON.parseObject(val);
+
+        JSONObject res=new JSONObject();
+        switch (filesuffix){
+            case "MAP" :
+                res = jsonObject.getJSONObject("DEM");
+                break;
+            case "PRJ":
+                JSONArray jsonArray=jsonObject.getJSONArray("m_jPile");  // dist z
+                JSONArray GEO = new JSONArray();
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    JSONObject geo =new JSONObject();
+                    geo.put("x", jsonArray.getJSONObject(i).getDouble("dist"));
+                    geo.put("z", jsonArray.getJSONObject(i).getDouble("z"));
+                    GEO.add(i,geo);
+                }
+                res.put("GEO",GEO);
+                break;
+            default:
+                res=jsonObject;
+        }
+        return res;
+
+    }
+
 
 
 
@@ -179,6 +271,7 @@ public class Project {
         }
         return filelist;
     }
+
     @CrossOrigin
     @RequestMapping("/download")
     public void download(HttpServletRequest request, HttpServletResponse response) {

@@ -38,8 +38,9 @@ public class ProjectDesign {
 
         final PointerByReference ptrRef = new PointerByReference();
 // call the C function
-        ProjectDesign.PDLibary.pd.LaoRead(resPath+"\\src\\main\\resources\\statics\\"+"SIMPLE.LAO",ptrRef);
-// extract the void* that was allocated in C
+        ProjectDesign.PDLibary.pd.PrjRead(resPath+"10.130.224.138\\test\\"+"test.PRJ",ptrRef);
+        //ProjectDesign.PDLibary.pd.PrkRead(resPath+"statics\\"+"SIMPLE.PRK",ptrRef);
+        // extract the void* that was allocated in C
         final Pointer p = ptrRef.getValue();
 // extract the null-terminated string from the Pointer
         final String val = p.getString(0);
