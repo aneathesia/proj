@@ -19,7 +19,7 @@ public class ProjectDesign {
         void MapRead(String FilePath, PointerByReference ResMap);
         void PrjSave(String pointFile,String demFile, String ResPath);
         void PrjRead(String FilePath, PointerByReference ResPrj);
-        void Prj(String pointFile, String demFile, String ResPath);
+        void Prj(String MAPFile,String PWFFile,String ResPath);
     }
     public  static void main(String[] args){
 //        String resPath= System.getProperty("user.dir") +"\\src\\main\\resources\\";
@@ -33,19 +33,22 @@ public class ProjectDesign {
 //        final String val = p.getString(0);
 //        System.out.println(val);
 
-
         String resPath= System.getProperty("user.dir") +"\\src\\main\\resources\\";
+//
+//        final PointerByReference ptrRef = new PointerByReference();
+//// call the C function
+//resPath+"202.114.118.138\\Jan\\Jan.MAP"
+//        //ProjectDesign.PDLibary.pd.PrkRead(resPath+"statics\\"+"SIMPLE.PRK",ptrRef);
+//        // extract the void* that was allocated in C
+//        final Pointer p = ptrRef.getValue();
+//// extract the null-terminated string from the Pointer
+//        final String val = p.getString(0);
+//
+//        System.out.println(val);
 
-        final PointerByReference ptrRef = new PointerByReference();
-// call the C function
-        ProjectDesign.PDLibary.pd.PrjRead(resPath+"10.130.224.138\\test\\"+"test.PRJ",ptrRef);
-        //ProjectDesign.PDLibary.pd.PrkRead(resPath+"statics\\"+"SIMPLE.PRK",ptrRef);
-        // extract the void* that was allocated in C
-        final Pointer p = ptrRef.getValue();
-// extract the null-terminated string from the Pointer
-        final String val = p.getString(0);
+        System.out.println(resPath + "202.114.118.138\\Jan\\Jan.MAP");
 
-        System.out.println(val);
+        ProjectDesign.PDLibary.pd.Prj(resPath+"202.114.118.138\\Jan\\Jan.MAP",resPath+"202.114.118.138\\Jan\\Jan.PWF",resPath+"202.114.118.138\\Jan\\Gen");
     }
 
 

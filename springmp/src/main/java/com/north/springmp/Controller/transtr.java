@@ -1,6 +1,7 @@
 package com.north.springmp.Controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.north.springmp.jna.ProjectDesign;
 import com.north.springmp.jna.prkfile;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import sun.security.ec.point.ProjectivePoint;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/")
@@ -24,7 +26,6 @@ public class transtr {
     @ResponseBody
     @RequestMapping(value = "/prksave", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     public String CreatePrkFromJson(HttpServletRequest request) { //RequestParam how to use
-        // 直接将json信息打印出来
         String jsonParam =request.getParameter("prk");
         JSONObject prkobj = JSON.parseObject(jsonParam);
         System.out.println(jsonParam);
@@ -61,7 +62,11 @@ public class transtr {
         String DemFile = request.getParameter("DemFile");
         String MapFile = request.getParameter("MapFile");
 
-         String stat_Path = System.getProperty("user.dir") +"\\src\\main\\resources\\";
+        System.out.println(PointFile);
+        System.out.println(DemFile);
+        System.out.println(MapFile);
+
+        String stat_Path = System.getProperty("user.dir") +"\\src\\main\\resources\\";
 
          System.out.println(PointFile);
          System.out.println(DemFile);
@@ -120,8 +125,6 @@ public class transtr {
         }
         return "error";
     }
-
-
 
     @PostMapping("/prkfile")
     public String prkfile(HttpServletRequest request){
@@ -193,24 +196,95 @@ public class transtr {
         return val;
     }
 
-
-    @PostMapping("/fileRead")  //根据后缀判断
-    public String MapfileRead(HttpServletRequest request){
-        //@Autowired
-        String stat_Path= System.getProperty("user.dir") +"\\src\\main\\resources\\";
+    @CrossOrigin
+    @RequestMapping(value = "/ReadfileToJson",method = RequestMethod.POST)
+    public JSONObject fileToJson(HttpServletRequest request) throws IllegalStateException, IOException {
+        String app_path = System.getProperty("user.dir");
+        String stat_path = app_path+"\\src\\main\\resources";
+        String ip = request.getRemoteAddr();
         String ProjectName = request.getParameter("ProjectName");
-        String ip =request.getRemoteAddr();
-        String FileName = request.getParameter("FileName");
+        String fileName = request.getParameter("FileName");
+        System.out.println(stat_path);
+        System.out.println(ProjectName);
+        System.out.println(fileName);
 
+//        System.out.println(ProjectName);
+//        ProjectName="Jan";
+//        System.out.println(ProjectName);
+
+        //文件名中取出 文件名 文件后缀
+
+        String filesuffix = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
+        System.out.println(filesuffix);
         final PointerByReference ptrRef = new PointerByReference();
+// call the C function  according to filesuffix
+        switch (filesuffix){
+            case "PRK":
+                ProjectDesign.PDLibary.pd.PrkRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+fileName,ptrRef);
+                break;
+            case "PRJ":
+                ProjectDesign.PDLibary.pd.PrjRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+fileName,ptrRef);
+                break;
+            case "PWF":
+                ProjectDesign.PDLibary.pd.PwfRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+fileName,ptrRef);
+                break;
+            case "MAP":
+                ProjectDesign.PDLibary.pd.MapRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+fileName,ptrRef);
+                break;
+            case "LAO":
+                ProjectDesign.PDLibary.pd.LaoRead(stat_path+"\\"+ip+"\\"+ProjectName+"\\"+fileName,ptrRef);
+                break;
+            default:
+                System.out.println("file miss match");
+        }
 
-        ProjectDesign.PDLibary.pd.MapRead(stat_Path+ip+"\\"+ProjectName+"\\"+FileName,ptrRef);
-        // extract the void* that was allocated in C
+// extract the void* that was allocated in C
         final Pointer p = ptrRef.getValue();
-        // extract the null-terminated string from the Pointer
+// extract the null-terminated string from the Pointer  p need not null
         final String val = p.getString(0);
-        System.out.println(val);
-        return val;
+        JSONObject jsonObject = JSON.parseObject(val);
+
+        JSONObject res=new JSONObject();
+        switch (filesuffix){
+            case "MAP" :
+                res = jsonObject.getJSONObject("DEM");
+                break;
+            case "PRJ":
+                JSONArray jsonArray=jsonObject.getJSONArray("m_jPile");  // dist z
+                JSONArray GEO = new JSONArray();
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    JSONObject geo =new JSONObject();
+                    geo.put("x", jsonArray.getJSONObject(i).getDouble("dist"));
+                    geo.put("z", jsonArray.getJSONObject(i).getDouble("z"));
+                    GEO.add(i,geo);
+                }
+                res.put("GEO",GEO);
+                break;
+            default:
+                res=jsonObject;
+        }
+        return res;
+
     }
+
+
+//    @PostMapping("/fileRead")  //根据后缀判断
+//    public String fileRead(HttpServletRequest request){
+//        //@Autowired
+//        String stat_Path= System.getProperty("user.dir") +"\\src\\main\\resources\\";
+//        String ProjectName = request.getParameter("ProjectName");
+//        String ip =request.getRemoteAddr();
+//        String FileName = request.getParameter("FileName");
+//
+//        final PointerByReference ptrRef = new PointerByReference();
+//
+//        ProjectDesign.PDLibary.pd.MapRead(stat_Path+ip+"\\"+ProjectName+"\\"+FileName,ptrRef);
+//        // extract the void* that was allocated in C
+//        final Pointer p = ptrRef.getValue();
+//        // extract the null-terminated string from the Pointer
+//        final String val = p.getString(0);
+//        System.out.println(val);
+//        return val;
+//    }
 
 }

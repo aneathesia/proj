@@ -51,22 +51,18 @@ public class Project {
         String ip = request.getRemoteAddr();
         String ProjectName = request.getParameter("ProjectName");
 
-//        System.out.println(ProjectName);
-//        ProjectName="Jan";
-//        System.out.println(ProjectName);
-
-        //文件名中取出 文件名 文件后缀
-        String filename = file.getOriginalFilename().substring(0,file.getOriginalFilename().lastIndexOf("."));
-        String filesuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."),file.getOriginalFilename().length());
-
         //创建文件夹 Proj
         File filepath = new File(stat_path+"\\"+ip+"\\"+ProjectName,file.getOriginalFilename());
         System.out.println(filepath.exists());
         if (!filepath.exists()) {
             filepath.mkdirs();
             System.out.println(filepath.toString());
+            //file.transferTo(filepath);
         }
+
         file.transferTo(filepath);
+
+
         //return "200";
         File fileDir = new File(stat_path+"\\"+ip+"\\"+ProjectName);
         if (!fileDir.exists()) {
@@ -85,12 +81,13 @@ public class Project {
 
     @CrossOrigin
     @RequestMapping(value = "/UploadfileToJson",method = RequestMethod.POST)
-    public JSONObject EGXFileToSection(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IllegalStateException, IOException {
+    public JSONObject UploadfileToJson(@RequestParam("file") MultipartFile file, HttpServletRequest request) throws IllegalStateException, IOException {
         String app_path = System.getProperty("user.dir");
         String stat_path = app_path+"\\src\\main\\resources";
         String ip = request.getRemoteAddr();
         String ProjectName = request.getParameter("ProjectName");
         System.out.println(ProjectName);
+
 
 //        System.out.println(ProjectName);
 //        ProjectName="Jan";
@@ -98,6 +95,7 @@ public class Project {
 
         //文件名中取出 文件名 文件后缀
         String filename = file.getOriginalFilename().substring(0,file.getOriginalFilename().lastIndexOf("."));
+        System.out.println(file.getOriginalFilename());
         String filesuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1,file.getOriginalFilename().length());
 
         System.out.println(filesuffix);
@@ -109,16 +107,8 @@ public class Project {
             System.out.println(filepath.toString());
         }
         file.transferTo(filepath);
-//创建文件夹
-//        String ip = request.getRemoteAddr();
-//        String projname = file.getOriginalFilename().substring(0,originalFilename.lastIndexOf("."));
-//        System.out.println(projname);
-//        File testfilepath = new File(stat_path+"\\"+ip);
-//        System.out.println(testfilepath.exists());
-//        if (!testfilepath.exists()) {
-//            testfilepath.mkdirs();
-//            System.out.println(testfilepath.toString());
-//        }
+
+
         System.out.println(stat_path + "\\" + ip + "\\" + ProjectName + "\\" + file.getOriginalFilename());
         final PointerByReference ptrRef = new PointerByReference();
 // call the C function  according to filesuffix
@@ -170,9 +160,6 @@ public class Project {
         return res;
 
     }
-
-
-
 
     @CrossOrigin
     @RequestMapping(value = "/CreateProject",method = RequestMethod.POST)
@@ -266,11 +253,14 @@ public class Project {
             FileInfo sf = new FileInfo();
             sf.name=f.getName();
             sf.csize =f.length();
-            sf.fname = f.getAbsolutePath();
+            sf.fname = f.getPath();
             filelist.add(sf);
         }
+
+        System.out.println("directory return");
         return filelist;
     }
+
 
     @CrossOrigin
     @RequestMapping("/download")
@@ -327,7 +317,7 @@ public class Project {
     }
 
     @CrossOrigin
-    @RequestMapping(value = "/Pathdownload/{Path},{filename}",method = RequestMethod.GET)
+    @RequestMapping(value = "/Pathdownload/Project={Path}&filename={filename}",method = RequestMethod.GET)
     public ResponseEntity downloadtest(@PathVariable String filename,@PathVariable String Path,HttpServletRequest request) throws Exception{
         String app_path = System.getProperty("user.dir");
         String stat_path = app_path+"\\src\\main\\resources";
@@ -335,22 +325,16 @@ public class Project {
         FileSystemResource file = new FileSystemResource(stat_path+"\\"+ip+"\\"+Path+"\\"+filename);
         System.out.println(file.getPath());
         HttpHeaders Headers = new HttpHeaders();
-        Headers.add("Content-Disposition", "attachment;fileName=" +filename);
+        Headers.add("Content-Disposition", "attachment;fileName=" +URLEncoder.encode(filename,"UTF-8"));
         return ResponseEntity.ok()
                 .headers(Headers)
                 .contentLength(file.contentLength())
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(new InputStreamResource(file.getInputStream()));
     }
+
+
+
 }
 
-//    @GetMapping("/downloadFile")
-//    public void downloadFile(@RequestParam("fileName")String fileName)throws IOException {
-//        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-//        HttpServletResponse response = requestAttributes.getResponse();
-//        String type =new MimetypesFileTypeMap().getContentType(fileName);
-//        response.setHeader("Content-type",type);
-//        String code = new String(fileName.getBytes(StandardCharsets.UTF_8));
-//        response.setHeader("Content-Disposition","attachment;fileName="+code);
-//    }
 
