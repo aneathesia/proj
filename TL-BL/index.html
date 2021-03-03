@@ -27,6 +27,7 @@
     <script>DD_belatedPNG.fix('*');</script>
     <![endif]-->
 	<title>架空输电线路勘测设计一体化系统</title>
+
 </head>
 <body class="mainbody">
 <style>
@@ -61,6 +62,15 @@
 			<dd>
 				<ul>
 					<li><a href="#"><label id="creatMap">新建图幅</label></a></li>
+				</ul>
+			</dd>
+		</dl>
+		<dl id="menu-resultTable">
+			<dt><i class="Hui-iconfont">&#xe618; </i><label id="ResTable"> 成果表</label><i class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i></dt>
+			<dd>
+				<ul>
+					<li><a href="#"><label id="Ptable">转角与直线桩表</label></a></li>
+					<li><a href="#"><label id="TListtable">杆塔排位成果表</label></a></li>
 				</ul>
 			</dd>
 		</dl>
@@ -166,6 +176,43 @@
 		</p>
 	</form>
 </div>-->
+<!--转角直线桩表-->
+<div class = "resTable" id="piletable">
+
+	<div>
+		<h4 id="h2title" style="margin-left: 2%;">转角直线表</h4>
+	</div>
+	<div class = "table-wrap">
+		<div class="table-header">
+			<tr style="height: 39px;">
+			<th th-name="PID"><div class="th-wrap"><span class="th-text">序号</span></div></th>
+			<th th-name="name"><div class="th-wrap"><span class="th-text">名称</span></div></th>
+			<th th-name="dist"><div class="th-wrap"><span class="th-text">累距</span></div></th>
+			</tr>
+		</div>
+		<div class="table-div" style="height: 300px;">
+
+		</div>
+	</div>
+	<div style="text-align-last: right;margin-top: 5px;margin-right: 2%;">
+		<button class="xbutton xround" onclick="inputdata()">导入数据</button>
+		<button class="xbutton xround" onclick="savePtable()">保存</button>
+		<button class="xbutton xround" onclick="closePtable()" id="ptableclose">关闭</button>
+	</div>
+</div>
+<div class = "resTable" id="tllisttable">
+
+	<div>
+		<h4 id="h2title" style="margin-left: 2%;">杆塔排位表</h4>
+	</div>
+	<div class = "table-wrap">
+		<table id ="table-pile-baseCode"></table>
+	</div>
+	<div style="display:inline-block;margin-top:2px;margin-left: 80%;">
+		<p ><button class="xbutton xround closeBtn">关闭</button></p>
+	</div>
+</div>
+
 <div class="designParam">
 	<div class = "designParamtitle">
 		<h2 id="h2title">详细设计参数</h2>
@@ -216,6 +263,10 @@
 	</div>
 </section>
 
+
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
 <script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js"></script>
 <script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script>
@@ -225,7 +276,6 @@
 <script type="text/javascript" src="./js/movediv.js"></script>
 <script type="text/javascript" src="./js/three.js"></script>
 <script type="text/javascript" src="./js/gm.js"></script>
-
 
 <script type="module">
 	import { CSS2DRenderer, CSS2DObject } from './js/CSS2DRenderer.js';
@@ -253,8 +303,25 @@
 	var columndataLeft = [{key: 'id', text: 'NO'}, {key: 'name', text: '型号/名称/图号'}];//表头
 	var columndataRight = [{key: 'name', text: '参数名称'}, {key: 'value', text: '参数数值'}];//表头
 
-	// $(".tower_settings").draggable();
-	// $(".frame_settings").draggable();
+	//table  show and hide
+	$("#piletable").draggable();
+	$("#piletable").hide();
+	$("#Ptable").click(function () {
+		$("#piletable").show();
+	})
+	$("#ptableclose").click(function () {
+		$("#piletable").hide();
+	})
+
+
+	$("#tllisttable").draggable();
+	$("#tllisttable").hide();
+	$("#TListtable").click(function () {
+		$("#tllisttable").show();
+	})
+	$(".closeBtn").click(function () {
+		$("#tllisttable").hide();
+	})
 	//prk设计参数框显示/隐藏
 	$(".designParam").draggable({handle:"#h2title"});
 	$(".designParam").hide();
@@ -265,6 +332,71 @@
 		$(".designParam").hide();
 	})
 
+	document.querySelector('#table-pile-ajaxPageCode').GM({
+		gridManagerName: 'pile-baseCode',
+		ajaxData: 'https://www.lovejavascript.com/learnLinkManager/getLearnLinkList',
+		ajaxType: 'POST',
+		supportAdjust: true,
+		supportDrag: false,
+		columnData: [
+			{
+				key: 'name',
+				text: '名称'
+			},{
+				key: 'info',
+				text: '说明'
+			},{
+				key: 'url',
+				text: 'url'
+			},
+			{
+				key: 'name',
+				text: '杆位名称'
+			},{
+				key: 'dist',
+				text: '累距'
+			},{
+				key: 'z',
+				text: '高程'
+			},{
+				key: 'secdist',
+				text: '距离'
+			},{
+				key: 'x',
+				text: '大地X坐标'
+			},{
+				key: 'y',
+				text: '大地Y坐标'
+			},{
+				key: 'angle',
+				text: '转角'
+			},{
+				key: 'point',
+				text: '点位误差'
+			},{
+				key: 'hc',
+				text: '航测断面较差'
+			}
+		]
+	});
+	// document.querySelector('#table-pile-baseCode').GM({
+	// 	gridManagerName: 'pile-baseCode',
+	// 	ajaxData: 'https://www.lovejavascript.com/learnLinkManager/getLearnLinkList',
+	// 	ajaxType: 'POST',
+	// 	supportDrag: true,
+	// 	columnData: [
+	// 		{
+	// 			key: 'name',
+	// 			text: '名称'
+	// 		},{
+	// 			key: 'info',
+	// 			text: '说明'
+	// 		},{
+	// 			key: 'url',
+	// 			text: 'url'
+	// 		}
+	// 	]
+	// });
 	//后台数据下载到本地
 	window.download = function() {
 		var text = $('#dembox option:selected').text();

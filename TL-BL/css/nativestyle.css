@@ -131,7 +131,17 @@
     border-width: thin;
     background-color: #F0F0F0;
 }
-
+.resTable{
+    width: 1000px;
+    height: 400px;
+    left: 10%;
+    top: 10%;
+    position: relative;
+    z-index: 9999;
+    border: groove;
+    border-width: thin;
+    background-color: #F0F0F0;
+ }
 .designParam h2{
     font-size: 16px;
     font-family: serif;
