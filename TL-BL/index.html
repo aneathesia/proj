@@ -27,7 +27,6 @@
     <script>DD_belatedPNG.fix('*');</script>
     <![endif]-->
 	<title>架空输电线路勘测设计一体化系统</title>
-
 </head>
 <body class="mainbody">
 <style>
@@ -65,12 +64,12 @@
 				</ul>
 			</dd>
 		</dl>
-		<dl id="menu-resultTable">
-			<dt><i class="Hui-iconfont">&#xe618; </i><label id="ResTable"> 成果表</label><i class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i></dt>
+		<dl id="menu-parameter">
+			<dt><i class="Hui-iconfont">&#xe618; </i><label id="resTable">成果表</label><i class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i></dt>
 			<dd>
 				<ul>
-					<li><a href="#"><label id="Ptable">转角与直线桩表</label></a></li>
-					<li><a href="#"><label id="TListtable">杆塔排位成果表</label></a></li>
+					<li><a href="#"><label id="Piletable">转角直线桩表</label></a></li>
+					<li><a href="#"><label id="towerlisttable">杆塔排位成果表</label></a></li>
 				</ul>
 			</dd>
 		</dl>
@@ -176,44 +175,25 @@
 		</p>
 	</form>
 </div>-->
-<!--转角直线桩表-->
-<div class = "resTable" id="piletable">
-
+<div class ="designParam" id="piletable" style="height: 400px;">
 	<div>
-		<h4 id="h2title" style="margin-left: 2%;">转角直线表</h4>
+		<h4 style="margin-left: 2%;" id="piletable_title">转角直线表</h4>
 	</div>
-	<div class = "table-wrap">
-		<div class="table-header">
-			<tr style="height: 39px;">
-			<th th-name="PID"><div class="th-wrap"><span class="th-text">序号</span></div></th>
-			<th th-name="name"><div class="th-wrap"><span class="th-text">名称</span></div></th>
-			<th th-name="dist"><div class="th-wrap"><span class="th-text">累距</span></div></th>
-			</tr>
-		</div>
-		<div class="table-div" style="height: 300px;">
 
-		</div>
-	</div>
-	<div style="text-align-last: right;margin-top: 5px;margin-right: 2%;">
-		<button class="xbutton xround" onclick="inputdata()">导入数据</button>
-		<button class="xbutton xround" onclick="savePtable()">保存</button>
-		<button class="xbutton xround" onclick="closePtable()" id="ptableclose">关闭</button>
-	</div>
-</div>
-<div class = "resTable" id="tllisttable">
+	<table id="mpile_table"></table>
+	<div class="line" style="outline-color: #1b1b1b;line-height: 5px;">-----</div>
+	<div style="display: inline;">
+		<!--		<button class="input-file" id="opentxt">文件上传</button>-->
 
-	<div>
-		<h4 id="h2title" style="margin-left: 2%;">杆塔排位表</h4>
-	</div>
-	<div class = "table-wrap">
-		<table id ="table-pile-baseCode"></table>
-	</div>
-	<div style="display:inline-block;margin-top:2px;margin-left: 80%;">
-		<p ><button class="xbutton xround closeBtn">关闭</button></p>
+			<button class="xbutton xround"  style="margin-left:5px;">		<input type="file" id ="piletxt_input"> </button>
+			<button class="xbutton xround" id="caculatedata" style="text-align-last: right">计算</button>
+			<button class="xbutton xround" id="savetable" style="text-align-last: right">保存</button>
+			<button class="xbutton xround close_btn" id="closeTable"style="text-align-last: right">关闭</button>
+
 	</div>
 </div>
 
-<div class="designParam">
+<div class="designParam" id="Paramtable">
 	<div class = "designParamtitle">
 		<h2 id="h2title">详细设计参数</h2>
 	</div>
@@ -263,10 +243,6 @@
 	</div>
 </section>
 
-
-
-
-
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
 <script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js"></script>
 <script type="text/javascript" src="lib/jquery/1.9.1/jquery.min.js"></script>
@@ -276,6 +252,7 @@
 <script type="text/javascript" src="./js/movediv.js"></script>
 <script type="text/javascript" src="./js/three.js"></script>
 <script type="text/javascript" src="./js/gm.js"></script>
+
 
 <script type="module">
 	import { CSS2DRenderer, CSS2DObject } from './js/CSS2DRenderer.js';
@@ -303,100 +280,563 @@
 	var columndataLeft = [{key: 'id', text: 'NO'}, {key: 'name', text: '型号/名称/图号'}];//表头
 	var columndataRight = [{key: 'name', text: '参数名称'}, {key: 'value', text: '参数数值'}];//表头
 
-	//table  show and hide
-	$("#piletable").draggable();
+
+
+
+	var pile_tabledata=[];
+	var pile_tableId=document.getElementById("mpile_table");
+	console.log(pile_tableId);
+	var tb_pile=new GridManager(pile_tableId,{
+		gridManagerName: 'demo-piletable',
+				ajaxData: {"data":pile_tabledata},
+				ajaxType: 'POST',
+				//supportMenu: true,// 默认为true
+							menuHandler: list => {
+								list.unshift({
+									content: '交换X Y',
+									line: true,
+									onClick: function(){
+										for(let i=0;i<pile_tabledata.length;i++)
+										{
+											var temp;
+											temp=pile_tabledata[i].x;
+											pile_tabledata[i].x=pile_tabledata[i].y;
+											pile_tabledata[i].y=temp;
+										}
+
+										GridManager.refreshGrid(pile_tableId);
+									}
+
+								});
+								return list;
+							},
+			columnData: [
+				{
+					key: 'name',
+					text: '杆位名称'
+				},{
+					key: 'dist',
+					text: '累距'
+				},{
+					key: 'z',
+					text: '高程'
+				},{
+					key: 'secdist',
+					text: '距离'
+				},{
+					key: 'x',
+					text: '大地x坐标'
+				},{
+					key: 'y',
+					text: '大地y坐标'
+				}
+				,{
+					key: 'angle',
+					text: '转角'
+				}
+				,{
+					key: 'my',
+					text: '点位误差'
+				}
+				,{
+					key: 'error',
+					text: '航测断面较差'
+				}
+			],
+
+		},
+			function(){}
+	);
+	//GridManager.init(pile_table);
+	//GridManager.refresh();
+	console.log(GridManager.get(pile_tableId));
+
+	// $(".tower_settings").draggable();
+	// $(".frame_settings").draggable()；
+	//pile table
+	$("#piletable").draggable({handle:"#piletable_title"});
+	//window resize;
 	$("#piletable").hide();
-	$("#Ptable").click(function () {
+	$("#Piletable").click(function () {
 		$("#piletable").show();
 	})
-	$("#ptableclose").click(function () {
+	$("#closeTable").click(function () {
 		$("#piletable").hide();
 	})
-
-
-	$("#tllisttable").draggable();
-	$("#tllisttable").hide();
-	$("#TListtable").click(function () {
-		$("#tllisttable").show();
-	})
-	$(".closeBtn").click(function () {
-		$("#tllisttable").hide();
-	})
 	//prk设计参数框显示/隐藏
-	$(".designParam").draggable({handle:"#h2title"});
-	$(".designParam").hide();
+	$("#Paramtable").draggable({handle:"#h2title"});
+	$("#Paramtable").hide();
 	$("#designparameter").click(function () {
-		$(".designParam").show();
+		$("#Paramtable").show();
 	})
 	$(".closeBtn").click(function () {
-		$(".designParam").hide();
+		$("#Paramtable").hide();
+	})
+	var fileObj=[];
+	$("#piletxt_input").change(function(){
+		var pile_table=[];
+		fileObj = this.files[0]; // js 获取文件对象
+		console.log(fileObj);
+		var form = new FormData(); // FormData 对象
+		form.append("file", fileObj); // 文件对象
+		form.append("ProjectName", "March");//控制路径
+		$.ajax({
+			url: "http://10.129.0.209:8181/txtToJson", //提交的路径
+			type: "post",       //提交方式
+			data: form,    //提交的数据
+			// dataType:"json",
+			contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+			processData: false,
+			success: function (res) {
+				console.log(res);
+				pile_tabledata =res;
+				GridManager.setAjaxData(pile_tableId,{"data":res});
+				// document.querySelector('#table-demo-baseCode').GM({
+				// 	gridManagerName: 'demo-baseCode',
+				// 	ajaxType: 'POST',
+				// 	cellClick:function(row,rowIndex,colIndex){
+				// 		console.log("cell edit");
+				// 		console.log(row);
+				// 		console.log(rowIndex);
+				// 		console.log(colIndex);
+				//
+				// 	},
+				// 	menuHandler: list => {
+				// 		list.unshift({
+				// 			content: '交换X Y',
+				// 			line: true,
+				// 			onClick: function(){
+				// 				for(let i=0;i<pile_table.length;i++)
+				// 				{
+				// 					var temp;
+				// 					temp=pile_table[i].x;
+				// 					pile_table[i].x=pile_table[i].y;
+				// 					pile_table[i].y=temp;
+				// 				}
+				// 			}
+				//
+				// 		});
+				// 		return list;
+				// 	},
+				// 	ajaxData: {"data":pile_table},
+				// 	columnData: [
+				// 		{
+				// 			key: 'name',
+				// 			text: '杆位名称'
+				// 		},{
+				// 			key: 'dist',
+				// 			text: '累距'
+				// 		},{
+				// 			key: 'z',
+				// 			text: '高程'
+				// 		},{
+				// 			key: 'secdist',
+				// 			text: '距离'
+				// 		},{
+				// 			key: 'x',
+				// 			text: '大地x坐标'
+				// 		},{
+				// 			key: 'y',
+				// 			text: '大地y坐标'
+				// 		}
+				// 		,{
+				// 			key: 'angle',
+				// 			text: '转角'
+				// 		}
+				// 		,{
+				// 			key: 'pointerr',
+				// 			text: '点位误差'
+				// 		}
+				// 		,{
+				// 			key: 'flyerr',
+				// 			text: '航测断面较差'
+				// 		}
+				// 	]
+				// });
+			}
+		});
+
 	})
 
-	document.querySelector('#table-pile-ajaxPageCode').GM({
-		gridManagerName: 'pile-baseCode',
-		ajaxData: 'https://www.lovejavascript.com/learnLinkManager/getLearnLinkList',
-		ajaxType: 'POST',
-		supportAdjust: true,
-		supportDrag: false,
-		columnData: [
-			{
-				key: 'name',
-				text: '名称'
-			},{
-				key: 'info',
-				text: '说明'
-			},{
-				key: 'url',
-				text: 'url'
+	$("#caculatedata").click(function(){
+		var pile_table={
+			"PRJPARA": {
+				"prjName": "Jan输电线路工程",
+				"ZSymol": "Z",
+				"JSymol": "J",
+				"GSymol": "G",
+				"FSymol": "F",
+				"DSymol": "D",
+				"leftRight": 10.0,
+				"lengthAngle": 4,
+				"lengthHigh": 2,
+				"lengthDist": 0,
+				"snap": 3.0,
+				"autoConnect": 2.0,
+				"digiteDist": 0,
+				"digiteXYZ": 2,
+				"digiteAngle": 4
 			},
-			{
-				key: 'name',
-				text: '杆位名称'
-			},{
-				key: 'dist',
-				text: '累距'
-			},{
-				key: 'z',
-				text: '高程'
-			},{
-				key: 'secdist',
-				text: '距离'
-			},{
-				key: 'x',
-				text: '大地X坐标'
-			},{
-				key: 'y',
-				text: '大地Y坐标'
-			},{
-				key: 'angle',
-				text: '转角'
-			},{
-				key: 'point',
-				text: '点位误差'
-			},{
-				key: 'hc',
-				text: '航测断面较差'
-			}
-		]
-	});
-	// document.querySelector('#table-pile-baseCode').GM({
-	// 	gridManagerName: 'pile-baseCode',
-	// 	ajaxData: 'https://www.lovejavascript.com/learnLinkManager/getLearnLinkList',
-	// 	ajaxType: 'POST',
-	// 	supportDrag: true,
-	// 	columnData: [
-	// 		{
-	// 			key: 'name',
-	// 			text: '名称'
-	// 		},{
-	// 			key: 'info',
-	// 			text: '说明'
-	// 		},{
-	// 			key: 'url',
-	// 			text: 'url'
-	// 		}
-	// 	]
+			"m_jPile": [
+				{
+					"name": "J0",
+					"x": 259384.4,
+					"y": 2862167.55,
+					"dist": 0.0,
+					"z": 2196.61,
+					"angle": 0.0,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J1",
+					"x": 259503.29,
+					"y": 2862175.0,
+					"dist": 119.12319085722182,
+					"z": 2200.0676344571118,
+					"angle": -11.39458269451091,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J2",
+					"x": 259774.09,
+					"y": 2862136.57,
+					"dist": 392.63645360695866,
+					"z": 2221.5800980097617,
+					"angle": -20.060048178698627,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J3",
+					"x": 260283.72,
+					"y": 2861863.57,
+					"dist": 970.7815365230073,
+					"z": 2228.517051551505,
+					"angle": 15.034749395001507,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J4",
+					"x": 260481.99,
+					"y": 2861817.38,
+					"dist": 1174.3607815358296,
+					"z": 2264.8670520722355,
+					"angle": 3.3337676547618946,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J5",
+					"x": 261355.41,
+					"y": 2861670.38,
+					"dist": 2060.064736816612,
+					"z": 2197.9493118366506,
+					"angle": 57.40009680765675,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J6",
+					"x": 262000.4,
+					"y": 2862389.57,
+					"dist": 3026.111503903955,
+					"z": 2200.131572815583,
+					"angle": 27.234514348390804,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J7",
+					"x": 262458.69,
+					"y": 2864162.82,
+					"dist": 4857.625982853005,
+					"z": 2257.5414464117277,
+					"angle": -25.58212659374255,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J8",
+					"x": 265701.19,
+					"y": 2867964.22,
+					"dist": 9854.069539024018,
+					"z": 2520.326413686367,
+					"angle": 25.422147283924084,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J9",
+					"x": 266412.92,
+					"y": 2870666.14,
+					"dist": 12648.158170277431,
+					"z": 2409.940258904066,
+					"angle": -10.344085283418876,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J10",
+					"x": 266699.89,
+					"y": 2871272.26,
+					"dist": 13318.779699382774,
+					"z": 2445.96713350088,
+					"angle": -36.34111374713944,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J11",
+					"x": 268334.89,
+					"y": 2872145.08,
+					"dist": 15172.16572296246,
+					"z": 2417.8211162587479,
+					"angle": -21.28580164921796,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J12",
+					"x": 269856.83,
+					"y": 2872321.5,
+					"dist": 16704.296716056713,
+					"z": 2258.3425217986889,
+					"angle": -31.273184181763765,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J13",
+					"x": 270975.79,
+					"y": 2871803.36,
+					"dist": 17937.398715568535,
+					"z": 2044.8168687999942,
+					"angle": 39.29298055427899,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J14",
+					"x": 271979.17,
+					"y": 2872065.56,
+					"dist": 18974.471646658778,
+					"z": 1621.889962651942,
+					"angle": 31.48581860151712,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J15",
+					"x": 272353.42,
+					"y": 2872459.4,
+					"dist": 19517.76991473984,
+					"z": 1458.8600892586383,
+					"angle": 35.31063062617797,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J16",
+					"x": 272499.31,
+					"y": 2873494.76,
+					"dist": 20563.35789367788,
+					"z": 1247.3773191912274,
+					"angle": -3.244842752101323,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J17",
+					"x": 272524.26,
+					"y": 2873618.12,
+					"dist": 20689.21571862366,
+					"z": 1137.046518793743,
+					"angle": -0.07141337061491746,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				},
+				{
+					"name": "J18",
+					"x": 272541.83,
+					"y": 2873704.06,
+					"dist": 20776.933382181185,
+					"z": 1100.0,
+					"angle": 0.0,
+					"position": "",
+					"mx": 0.0,
+					"my": 0.0,
+					"high": 0.0,
+					"error": 0.0
+				}
+			],
+			"m_gPile": [],
+			"lastMapFile": "C:\\USERS\\WANGHJ\\DESKTOP\\JAN\\JAN.MAP"
+		};
+		var form = new FormData();
+		form.append("file",fileObj);
+		form.append("ProjectName", "March");
+
+		console.log(pile_table.m_jPile);
+		$.ajax({
+				url: "http://10.129.0.209:8181/txtToTableRes", //提交的路径
+				type: "post",       //提交方式
+				data: form,    //提交的数据
+				// dataType:"json",
+				contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+				processData: false,
+				success: function (res) {
+					console.log("caculate cacu res");
+					console.log(res.m_jPile);
+					pile_tabledata=res.m_jPile;
+					//console.log(GridManager.getAjaxData(pile_tableId));
+					//need to caculate the secdist
+					GridManager.setAjaxData(pile_tableId,{"data":pile_tabledata});
+				}
+
+	// 	{
+	// 		var form = new FormData();
+	// 	form.append("file", fileObj); // 文件对象
+	// 	console.log(fileObj);
+	// 	form.append("ProjectName", "March");//控制路径
+	//
+	// $.ajax({
+	// 	url: "http://10.129.0.209:8181/txtToTableRes", //提交的路径
+	// 	type: "post",       //提交方式
+	// 	data: form,    //提交的数据
+	// 	// dataType:"json",
+	// 	contentType: false, // 告诉jQuery不要去设置Content-Type请求头
+	// 	processData: false,
+	// 	success: function (res) {
+	// 		console.log(res.m_jPile);
+	// 		pile_table =res.m_jPile;
+	//
+	// 		document.querySelector('#table-demo-baseCode').GM({
+	// 			gridManagerName: 'demo-baseCode',
+	// 			ajaxData: {"data":pile_table},
+	// 			ajaxType: 'POST',
+	// 			cellClick:function(row,rowIndex,colIndex){
+	// 				console.log("cell edit");
+	// 				console.log(row);
+	// 				console.log(rowIndex);
+	// 				console.log(colIndex);
+	//
+	// 			},
+	// 			menuHandler: list => {
+	// 				list.unshift({
+	// 					content: '交换X Y',
+	// 					line: true,
+	// 					onClick: function(){
+	// 						for(let i=0;i<pile_table.length;i++)
+	// 						{
+	// 							var temp;
+	// 							temp=pile_table[i].x;
+	// 							pile_table[i].x=pile_table[i].y;
+	// 							pile_table[i].y=temp;
+	// 						}
+	// 					}
+	//
+	// 				});
+	// 				return list;
+	// 			},
+	// 			columnData: [
+	// 				{
+	// 					key: 'name',
+	// 					text: '杆位名称'
+	// 				},{
+	// 					key: 'dist',
+	// 					text: '累距'
+	// 				},{
+	// 					key: 'z',
+	// 					text: '高程'
+	// 				},{
+	// 					key: 'secdist',
+	// 					text: '距离'
+	// 				},{
+	// 					key: 'x',
+	// 					text: '大地x坐标'
+	// 				},{
+	// 					key: 'y',
+	// 					text: '大地y坐标'
+	// 				}
+	// 				,{
+	// 					key: 'angle',
+	// 					text: '转角'
+	// 				}
+	// 				,{
+	// 					key: 'pointerr',
+	// 					text: '点位误差'
+	// 				}
+	// 				,{
+	// 					key: 'flyerr',
+	// 					text: '航测断面较差'
+	// 				}
+	// 			]
+	// 		});
+	// 	}
 	// });
+	// 	}
+
+
+})})
+
+
 	//后台数据下载到本地
 	window.download = function() {
 		var text = $('#dembox option:selected').text();
@@ -4673,7 +5113,8 @@
 			}
 		});
 	}
-
+	//draw
+	{
 	/* 预设格网参数 */
 	var divisions = 10;var verSize = 160;var horSize = 300;
 	var width,dis,gridHor,gridVer;
@@ -5661,4 +6102,6 @@
 		init();
 		animate();
 	})();
+
+	}
 </script>
